@@ -9,6 +9,7 @@
 
   // the textures
   let worldTexture;
+  let myTexture;
   
   // VAOs for the objects
   var mySphere = null;
@@ -48,13 +49,21 @@ function setUpTextures(){
     
     // get some texture space from the gpu
     worldTexture = gl.createTexture();
+    myTexture = gl.createTexture();
     
     // load the actual image
     const worldImage = new Image();
     worldImage.src = '1_earth_16k.jpg';
 
+    const myImage = new Image();
+    myImage.src = '1_earth_16k.jpg';
+
     worldImage.onload = () => {
         doLoad (worldTexture, worldImage);
+    };
+
+    myImage.onload = () => {
+        doLoad (myTexture, myImage);
     };
 }
 
@@ -77,12 +86,36 @@ function drawCurrentShape () {
     
     // set up your uniform variables for drawing
     gl.useProgram (program);
+
+    var textureToUse;
+    var textureTypeValue;
+
+    switch (curTexture) {
+        case "globe":
+            textureToUse = worldTexture;
+            textureTypeValue = 0;
+            break;
+        case "myimage":
+            textureToUse = myTexture;
+            textureTypeValue = 1;
+            break;
+        case "proc":
+            textureToUse = worldTexture;
+            textureTypeValue = 2;
+            break;
+        default:
+            textureToUse = worldTexture;
+            textureTypeValue = 0;
+    }
     
     // set up texture uniform & other uniforms that you might
     // have added to the shader
     gl.activeTexture (gl.TEXTURE0);
-    gl.bindTexture (gl.TEXTURE_2D, worldTexture);
+    gl.bindTexture (gl.TEXTURE_2D, textureToUse);
     gl.uniform1i (program.uTheTexture, 0);
+
+    // set up texture type uniform (0=globe, 1=myimage, 2=procedural)
+    gl.uniform1i (program.uTextureType, textureTypeValue);
     
     // set up rotation uniform
     gl.uniform3fv (program.uTheta, new Float32Array(angles));
@@ -122,6 +155,7 @@ function initProgram (vertexid, fragmentid) {
   // uniforms - you will need to add references for any additional
   // uniforms that you add to your shaders
   program.uTheTexture = gl.getUniformLocation (program, 'theTexture');
+  program.uTextureType = gl.getUniformLocation (program, 'textureType');
   program.uTheta = gl.getUniformLocation (program, 'theta');
     
   return program;
