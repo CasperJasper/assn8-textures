@@ -59,6 +59,7 @@
      <!-- fragment Shader -->
      <script id="sphereMap-F" type="x-shader/x-fragment">
          #version 300 es
+         
 
          // Fragment shader for phong illumination model
          // Per vertex shading
@@ -70,12 +71,29 @@
          
          // the texture to use
          uniform sampler2D theTexture;
+         uniform int textureType;
 
          // Color that is the result of this shader
          out vec4 fragColor;
 
+         vec4 proceduralTexture(vec2 uv) {
+              float scale = 10.0;
+              float x = floor(uv.s*scale);
+              float y = floor(uv.t*scale);
+
+              if (mod(x+y, 2.0) < 1.0) {
+                  return vec4(0.8, 0.2, 0.2, 1.0); // red
+              } else {
+                  return vec4(0.9, 0.9, 0.1, 1.0); // yellow
+              }
+         }
+
          void main(void) {
-             fragColor = texture (theTexture, theUV);
+             if (textureType == 2) {
+                fragColor = proceduralTexture(theUV);
+             } else {
+                fragColor = texture (theTexture, theUV);
+             } 
          }
 
     </script>
@@ -94,6 +112,8 @@
     
     <!-- texture images -->
     <img id="world-texture" src="1_earth_16k.jpg" style="display: none;"> </img>
+
+    <img id="my-texture" src="1_earth_16k.jpg" style="display: none;"> </img>
     
     <!-- keyboard functions -->
     <script type="text/javascript">
